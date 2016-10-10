@@ -12,5 +12,13 @@ namespace Settler
         {
             return new Fixture<T>();
         }
+
+        public static IFixture For(Type klass)
+        {
+            return (IFixture) typeof(AutoFixture)
+                .GetMethod("For")
+                .MakeGenericMethod(klass)
+                .Invoke(null, new object[0]);
+        }
     }
 }
