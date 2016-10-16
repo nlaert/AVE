@@ -6,14 +6,16 @@ using System.Text;
 
 namespace Settler
 {
-     public interface IFixture {
+    public interface IFixture
+    {
         Object New();
     }
     public class Fixture<T> : IFixture
     {
         private readonly Type klass;
 
-        public Fixture() {
+        public Fixture()
+        {
             klass = typeof(T);
         }
 
@@ -22,29 +24,32 @@ namespace Settler
             if (klass == null)
                 throw new NullReferenceException();
             T temp;
-            if(!klass.IsPrimitive && klass != typeof(string) && !klass.IsArray)
+            if (!klass.IsPrimitive && klass != typeof(string) && !klass.IsArray)
             {
-                var ctor = klass.GetConstructors()[0];
-                foreach(var param in ctor.GetParameters()){
-
-                }
-                foreach (FieldInfo field in klass.GetFields(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    object obj = AutoFixture.For(field.DeclaringType).New();
-                    field.SetValue(temp, obj);
-                }
                 temp = Activator.CreateInstance<T>();
+                foreach (PropertyInfo prop in klass.GetProperties())
+                {
+                    IFixture debug = AutoFixture.For(prop.PropertyType);
+                    object obj = debug.New();
+                    prop.SetValue(temp, obj);
+                }
+
                 return temp;
             }
-            return Fill();
-           
+            if (klass.IsArray)
+            {
+                Fill(Randomize.GetRandomInteger());
+            }
+            return (T)FillPrimitive();
+
         }
 
-        Object IFixture.New() {
+        Object IFixture.New()
+        {
             return this.New();
         }
 
-        public Fixture<T> Member(string name, params object [] pool)
+        public Fixture<T> Member(string name, params object[] pool)
         {
             return this;
         }
@@ -56,19 +61,15 @@ namespace Settler
             {
                 res[i] = New();
             }
-                return res;
+            return res;
         }
 
-        public T Fill()
+        public object FillPrimitive()
         {
-            
-           
-                T temp = Activator.CreateInstance<T>();
-                temp.GetType().GetProperties()[0].SetValue(temp, Randomize.GetRandomInteger());
-                return temp;
-
+            if (klass == typeof(string))
+                return Randomize.GetRandomString();
+            else
+                return Randomize.GetRandomInteger();
         }
-
-        
     }
 }

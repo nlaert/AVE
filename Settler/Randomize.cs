@@ -25,7 +25,7 @@ namespace Settler
         public static int GetRandomInteger()
         {
             Random random = new Random();
-            return random.Next();
+            return random.Next(1, 10);
         }
     }
 }

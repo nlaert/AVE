@@ -16,7 +16,7 @@ namespace Settler
         public static IFixture For(Type klass)
         {
             return (IFixture) typeof(AutoFixture)
-                .GetMethod("For")
+                .GetMethod("For", Type.EmptyTypes)
                 .MakeGenericMethod(klass)
                 .Invoke(null, new object[0]);
         }
