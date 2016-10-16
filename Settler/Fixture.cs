@@ -26,7 +26,7 @@ namespace Settler
             T temp;
             if (!klass.IsPrimitive && klass != typeof(string) && !klass.IsArray)
             {
-                temp = Activator.CreateInstance<T>();
+                temp = (T)getInstance(klass);
                 foreach (PropertyInfo prop in klass.GetProperties())
                 {
                     IFixture debug = AutoFixture.For(prop.PropertyType);
@@ -70,6 +70,40 @@ namespace Settler
                 return Randomize.GetRandomString();
             else
                 return Randomize.GetRandomInteger();
+        }
+
+        public static object getInstance(Type t)
+        {
+            ConstructorInfo ci = getSmallestConstructor(t);
+            ParameterInfo[] pi = ci.GetParameters();
+            object[] parameters = new object[pi.Length];
+
+            for (int i = 0; i < pi.Length; i++)
+            {
+                ParameterInfo parameterInfo = pi[i];
+                ConstructorInfo cType = getSmallestConstructor(parameterInfo.ParameterType);
+                if (cType == null || cType.GetParameters().Length == 0) parameters[i] = Activator.CreateInstance(parameterInfo.ParameterType);
+                else { parameters[i] = getInstance(parameterInfo.ParameterType); }
+            }
+            return ci.Invoke(parameters);
+        }
+            
+        private static ConstructorInfo getSmallestConstructor(Type classType)
+        {
+            ConstructorInfo[] constructors = classType.GetConstructors();
+            if (constructors.Length == 0) return null;
+            ConstructorInfo smallestCi = constructors[0];
+            int smaller = constructors[0].GetParameters().Length;
+            foreach (ConstructorInfo ci in constructors)
+            {
+                int dimension = ci.GetParameters().Length;
+                if (dimension <= smaller)
+                {
+                    smallestCi = ci;
+                    smaller = dimension;
+                }
+            }
+            return smallestCi;
         }
     }
 }
