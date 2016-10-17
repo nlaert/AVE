@@ -8,7 +8,6 @@ namespace Settler.Test
 {
     class Student
     {
-        public Student() { }
         public Student(int p1, string p2, School p3)
         {
             this.Nr = p1;
