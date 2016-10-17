@@ -20,5 +20,12 @@ namespace Settler
                 .MakeGenericMethod(klass)
                 .Invoke(null, new object[0]);
         }
+        public static IFixture Member(Type klass)
+        {
+            return (IFixture)typeof(AutoFixture)
+                .GetMethod("Member", Type.EmptyTypes)
+                .MakeGenericMethod(klass)
+                .Invoke(null, new object[0]);
+        }
     }
 }

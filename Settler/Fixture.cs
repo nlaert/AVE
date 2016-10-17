@@ -13,7 +13,8 @@ namespace Settler
     public class Fixture<T> : IFixture
     {
         private readonly Type klass;
-
+        private Object o1;
+        private Dictionary<String, Object> Map = new Dictionary<string, object>();
         public Fixture()
         {
             klass = typeof(T);
@@ -29,11 +30,14 @@ namespace Settler
                 temp = (T)getInstance(klass);
                 foreach (PropertyInfo prop in klass.GetProperties())
                 {
-                    IFixture debug = AutoFixture.For(prop.PropertyType);
+                   /* IFixture debug = AutoFixture.For(prop.PropertyType);
                     object obj = debug.New();
-                    prop.SetValue(temp, obj);
+                    prop.SetValue(temp, obj); */
+                    Object value;
+                    if (Map.TryGetValue(prop.Name, out value)) prop.SetValue(temp, value);
+                    else prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
                 }
-
+                o1 = temp;
                 return temp;
             }
             if (klass.IsArray)
@@ -51,7 +55,12 @@ namespace Settler
 
         public Fixture<T> Member(string name, params object[] pool)
         {
+            IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
+            if (pi.Count()== 0) throw new InvalidOperationException();
+            Map.Add(name, pool[Randomize.GetRandomInteger(pool.Length)]);
+           // pi.ElementAt(0).SetValue(o1,pool[Randomize.GetRandomInteger(pool.Length)]);
             return this;
+
         }
 
         public T[] Fill(int size)

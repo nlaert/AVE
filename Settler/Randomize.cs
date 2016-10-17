@@ -27,5 +27,10 @@ namespace Settler
             Random random = new Random();
             return random.Next(1, 10);
         }
+        public static int GetRandomInteger(int n) 
+        {
+            Random random = new Random();
+            return random.Next(1, n);
+        }
     }
 }
