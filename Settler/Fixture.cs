@@ -80,8 +80,13 @@ namespace Settler
         public Fixture<T> Member(string name, params object[] pool)
         {
             IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
-            if (pi.Count()== 0) throw new InvalidOperationException();
-            Map.Add(name, pool[Randomize.GetRandomInteger(pool.Length)]);
+            if (pi.Count()== 0)
+                throw new InvalidOperationException();
+            //Fixture<T>[] fix = pool as Fixture<T>[];
+            //if (fix != null)
+            //    Map.Add(name, pool);
+            //else
+                Map.Add(name, pool[Randomize.GetRandomInteger(pool.Length)]);
            // pi.ElementAt(0).SetValue(o1,pool[Randomize.GetRandomInteger(pool.Length)]);
             return this;
         }

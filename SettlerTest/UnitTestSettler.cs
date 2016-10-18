@@ -60,5 +60,21 @@ namespace Settler.Test
             }
             Console.WriteLine(cr);
         }
+
+        [TestMethod]
+        public void TestSingleton()
+        {
+            Fixture<School> fixSchool = AutoFixture.
+                For<School>().
+                Member("Name", "ISEL").
+                Singleton();
+            Fixture<Student> fix = AutoFixture.
+                For<Student>().
+                Member("School", fixSchool);
+            Student s1 = fix.New();
+            Student s2 = fix.New();
+            Assert.AreEqual(s1.School, s2.School);
+        }
+
     }
 }

@@ -33,7 +33,7 @@ namespace Settler
         public static int GetRandomInteger(int n) 
         {
             Random random = new Random();
-            return random.Next(1, n);
+            return random.Next(0, n);
         }
     }
 }
