@@ -36,18 +36,18 @@ namespace Settler
                 foreach (PropertyInfo prop in klass.GetProperties())
                 {
                     Object value;
-                    if (Map.TryGetValue(prop.Name, out value)) 
+                    if (Map.TryGetValue(prop.Name, out value))
                         prop.SetValue(temp, value);
-                    else 
+                    else
                         prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
                 }
 
                 foreach (FieldInfo field in klass.GetFields())
                 {
                     Object value;
-                    if (Map.TryGetValue(field.Name, out value)) 
+                    if (Map.TryGetValue(field.Name, out value))
                         field.SetValue(temp, value);
-                    else 
+                    else
                         field.SetValue(temp, AutoFixture.For(field.FieldType).New());
                 }
                 SingletonObject = temp;
@@ -80,24 +80,33 @@ namespace Settler
         public Fixture<T> Member(string name, params object[] pool)
         {
             IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
-            if (pi.Count()== 0)
+            if (pi.Count() == 0)
                 throw new InvalidOperationException();
-            //Fixture<T>[] fix = pool as Fixture<T>[];
-            //if (fix != null)
-            //    Map.Add(name, pool);
-            //else
-                Map.Add(name, pool[Randomize.GetRandomInteger(pool.Length)]);
-           // pi.ElementAt(0).SetValue(o1,pool[Randomize.GetRandomInteger(pool.Length)]);
+            var index = Randomize.GetRandomInteger(pool.Length);
+            if (typeof(IFixture).IsAssignableFrom(pool[index].GetType()))
+            {
+                var x = pool[index].GetType().GetMethod("New").Invoke(pool[index], null);
+                Map.Add(name, x);
+                //falta ir buscar o valor do singleton
+            }
+            else
+                Map.Add(name, pool[index]);
+
+            // pi.ElementAt(0).SetValue(o1,pool[Randomize.GetRandomInteger(pool.Length)]);
             return this;
         }
 
+        /*
         public Fixture<T> Member(string name, Fixture<T> fix)
         {
             IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
             if (pi.Count() == 0) throw new InvalidOperationException();
             Map.Add(name, fix.New());
+            if (fix.IsSingleton)
+                this.IsSingleton = fix.IsSingleton;
             return this;
         }
+        */
 
         public T[] Fill(int size)
         {
@@ -133,7 +142,7 @@ namespace Settler
             }
             return ci.Invoke(parameters);
         }
-            
+
         private static ConstructorInfo getSmallestConstructor(Type classType)
         {
             ConstructorInfo[] constructors = classType.GetConstructors();
