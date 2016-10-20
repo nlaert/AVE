@@ -71,9 +71,11 @@ namespace Settler.Test
             Fixture<Student> fix = AutoFixture.
                 For<Student>().
                 Member("School", fixSchool);
-            Student s1 = fix.New();
+            School s1 = fixSchool.New();
             Student s2 = fix.New();
-            Assert.AreEqual(s1.School, s2.School);
+            Student s3 = s2;
+            s3.School.Name = "NoSchool";
+            Assert.AreEqual(s1.Name,s2.School.Name);
         }
 
 
@@ -86,9 +88,11 @@ namespace Settler.Test
             Fixture<Student> fix = AutoFixture.
                 For<Student>().
                 Member("School", fixSchool);
-            Student s1 = fix.New();
+            School s1 = fixSchool.New();
             Student s2 = fix.New();
-            Assert.AreNotEqual(s1.School, s2.School);
+            Student s3 = s2;
+            s3.School.Name = "NoSchool";
+            Assert.AreNotEqual(s1.Name, s2.School.Name);
         }
 
     }
