@@ -37,7 +37,15 @@ namespace Settler
                 {
                     Object value;
                     if (Map.TryGetValue(prop.Name, out value))
-                        prop.SetValue(temp, value);
+                    {
+                        if (typeof(IFixture).IsAssignableFrom(value.GetType()))
+                        {
+                            var x = value.GetType().GetMethod("New").Invoke(value, null);
+                            prop.SetValue(temp, x);
+                        }
+                        else
+                            prop.SetValue(temp, value);
+                    }  
                     else
                         prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
                 }
@@ -83,6 +91,7 @@ namespace Settler
             if (pi.Count() == 0)
                 throw new InvalidOperationException();
             var index = Randomize.GetRandomInteger(pool.Length);
+            /*
             if (typeof(IFixture).IsAssignableFrom(pool[index].GetType()))
             {
                 var x = pool[index].GetType().GetMethod("New").Invoke(pool[index], null);
@@ -90,23 +99,13 @@ namespace Settler
                 //falta ir buscar o valor do singleton
             }
             else
-                Map.Add(name, pool[index]);
 
-            // pi.ElementAt(0).SetValue(o1,pool[Randomize.GetRandomInteger(pool.Length)]);
+                */
+             Map.Add(name, pool[index]);
+
+         
             return this;
         }
-
-        /*
-        public Fixture<T> Member(string name, Fixture<T> fix)
-        {
-            IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
-            if (pi.Count() == 0) throw new InvalidOperationException();
-            Map.Add(name, fix.New());
-            if (fix.IsSingleton)
-                this.IsSingleton = fix.IsSingleton;
-            return this;
-        }
-        */
 
         public T[] Fill(int size)
         {

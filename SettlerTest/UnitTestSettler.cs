@@ -76,5 +76,20 @@ namespace Settler.Test
             Assert.AreEqual(s1.School, s2.School);
         }
 
+
+        [TestMethod]
+        public void TestNonSingleton()
+        {
+            Fixture<School> fixSchool = AutoFixture.
+                For<School>().
+                Member("Name", "ISEL");
+            Fixture<Student> fix = AutoFixture.
+                For<Student>().
+                Member("School", fixSchool);
+            Student s1 = fix.New();
+            Student s2 = fix.New();
+            Assert.AreNotEqual(s1.School, s2.School);
+        }
+
     }
 }
