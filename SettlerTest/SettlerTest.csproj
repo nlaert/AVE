@@ -4,7 +4,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E3176179-D024-448E-BE7E-DCFCBE23B8ED}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Settler.Test</RootNamespace>
     <AssemblyName>SettlerTest</AssemblyName>
@@ -34,6 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Settler.Test.Tester</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -53,10 +56,15 @@
     <Compile Include="Classroom.cs" />
     <Compile Include="School.cs" />
     <Compile Include="Student.cs" />
+    <Compile Include="Tester.cs" />
     <Compile Include="UnitTestSettler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SettlerEmit\SettlerEmit.csproj">
+      <Project>{df7a179f-550b-4370-baf2-77f3e6015f34}</Project>
+      <Name>SettlerEmit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\settler\Settler.csproj">
       <Project>{f92c330a-9c96-4031-87c1-1c7622055206}</Project>
       <Name>Settler</Name>
