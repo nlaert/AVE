@@ -11,6 +11,12 @@ namespace SettlerEmit
         public const int MIN_RANDOM_INTEGER = 1;
         public const int MAX_RANDOM_INTEGER = 10;
         public const int RANDOM_STRING_SIZE = 10;
+        public static object getRandom(object obj)
+        {
+            if (obj.GetType() == typeof(string)) return GetRandomString();
+            else return GetRandomInteger();
+                       
+        }
         public static string GetRandomString()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -30,10 +36,10 @@ namespace SettlerEmit
             Random random = new Random();
             return random.Next(MIN_RANDOM_INTEGER, MAX_RANDOM_INTEGER);
         }
-        public static int GetRandomInteger(int n) 
+       /* public static int GetRandomInteger(int n) 
         {
             Random random = new Random();
             return random.Next(0, n);
-        }
+        } */
     }
 }

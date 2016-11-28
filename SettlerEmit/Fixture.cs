@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
 namespace SettlerEmit
 {
     public interface IFixture
@@ -56,7 +55,7 @@ namespace SettlerEmit
             IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
             if (pi.Count() == 0)
                 throw new InvalidOperationException();
-            var index = Randomize.GetRandomInteger(pool.Length);
+          //TODO  var index = Randomize.GetRandomInteger(pool.Length);
             /*
             if (typeof(IFixture).IsAssignableFrom(pool[index].GetType()))
             {
@@ -66,8 +65,8 @@ namespace SettlerEmit
             }
             else
 
-                */
-             Map.Add(name, pool[index]);
+                */ //TODO
+           //  Map.Add(name, pool[index]);
 
          
             return this;
@@ -144,5 +143,30 @@ namespace SettlerEmit
             Map.Add(typeName, newObj);
             return true;
         }
+       /* private void SeeIL(Student s, PropertyInfo[] pi, ConstructorInfo[] ci) 
+        {
+            //Object o = Activator.CreateInstance(t); //change
+           /* foreach (PropertyInfo p in pi) 
+            {
+                p.SetValue(o, Randomize.getRandom(p.PropertyType));
+            } */
+            /* ldarg.1
+              IL_0002:  ldc.i4.1
+              IL_0003:  callvirt   instance void SettlerEmit.Student::set_Nr(int32)
+              IL_0008:  nop
+              IL_0009:  ldarg.1
+              IL_000a:  ldstr      "test"
+              IL_000f:  callvirt   instance void SettlerEmit.Student::set_Name(string)
+              IL_0014:  nop
+              IL_0015:  ret
+            
+            s.Nr=1;
+            s.Name="test";
+        */
+        
+        
+    
     }
+   
 }
+

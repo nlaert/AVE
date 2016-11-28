@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Settler.Test.Tester</StartupObject>
+    <StartupObject>Settler.Test.UnitTestEmit</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -57,7 +57,7 @@
     <Compile Include="Classroom.cs" />
     <Compile Include="School.cs" />
     <Compile Include="Student.cs" />
-    <Compile Include="Tester.cs" />
+    <Compile Include="UnitTestEmit.cs" />
     <Compile Include="UnitTestSettler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

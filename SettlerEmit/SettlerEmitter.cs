@@ -89,25 +89,43 @@ namespace SettlerEmit
         private void ImplementNewMethod(MethodBuilder fixtureMethodBuilder, Type type)
         {
             il = fixtureMethodBuilder.GetILGenerator();
-
-           
+            PropertyInfo[] pi = type.GetProperties();
+            ConstructorInfo ci = getSmallestConstructor(type);
 
             callGetRandomString = typeof(Randomize).GetMethod("GetRandomString");
-            //callGetRandomInteger = typeof(Randomize).GetMethod("GetRandomInteger");
+            callGetRandomInteger = typeof(Randomize).GetMethod("GetRandomInteger");
             //callNew = typeof(Fixture).GetMethod("New");
 
-            paramObject = il.DeclareLocal(typeof(object));//0
-            localString = il.DeclareLocal(typeof(string));//1
-            lengthLocal = il.DeclareLocal(typeof(int));//2
-            string hello = "hello";
-            il.Emit(OpCodes.Ldstr, hello);
-            MethodInfo method = typeof(System.Console).GetMethod("WriteLine",
-                BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object) }, null);
-            il.Emit(OpCodes.Call, method);
+            foreach (PropertyInfo p in pi)
+            {
+                il.Emit(OpCodes.Ldarg_0); //load this
+                if (p.PropertyType == typeof(string)) il.Emit(OpCodes.Call, callGetRandomString);
+                else if (p.PropertyType == typeof(int)) il.Emit(OpCodes.Call, callGetRandomInteger);
+                //else if (p.PropertyType.IsValueType) { il.Emit(OpCodes.Call, typeof(Fixture
+                MethodInfo setValue = p.GetSetMethod();
+                il.Emit(OpCodes.Call, setValue);
+            }
 
-            il.Emit(OpCodes.Ldarg_0);
+           // il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ret);
 
+        }
+        private static ConstructorInfo getSmallestConstructor(Type classType)
+        {
+            ConstructorInfo[] constructors = classType.GetConstructors();
+            if (constructors.Length == 0) return null;
+            ConstructorInfo smallestCi = constructors[0];
+            int smaller = constructors[0].GetParameters().Length;
+            foreach (ConstructorInfo ci in constructors)
+            {
+                int dimension = ci.GetParameters().Length;
+                if (dimension <= smaller)
+                {
+                    smallestCi = ci;
+                    smaller = dimension;
+                }
+            }
+            return smallestCi;
         }
 
        
