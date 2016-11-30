@@ -72,42 +72,59 @@ namespace SettlerEmit
             return (IFixture)Activator.CreateInstance(FixtureType);
         }
 
-        private void ImplementFillMethod(MethodBuilder newMethodBuilder, Type type)
+        private void ImplementFillMethod(MethodBuilder fillMethodBuilder, Type type)
         {
-            il = newMethodBuilder.GetILGenerator();
+
+            il = fillMethodBuilder.GetILGenerator();
+            paramObject = il.DeclareLocal(type);//0
+
+
             string hello = "hello";
             il.Emit(OpCodes.Ldstr, hello);
             MethodInfo method = typeof(System.Console).GetMethod("WriteLine",
                 BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object) }, null);
             il.Emit(OpCodes.Call, method);
 
-            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
 
         }
 
-        private void ImplementNewMethod(MethodBuilder fixtureMethodBuilder, Type type)
+        private void ImplementNewMethod(MethodBuilder newMethodBuilder, Type type)
         {
-            il = fixtureMethodBuilder.GetILGenerator();
-            PropertyInfo[] pi = type.GetProperties();
-            ConstructorInfo ci = getSmallestConstructor(type);
+            
+            il = newMethodBuilder.GetILGenerator();
+            paramObject = il.DeclareLocal(type);//Declare Student
 
+            
+            PropertyInfo[] pi = type.GetProperties();
+            ctor = getSmallestConstructor(type);
+            
             callGetRandomString = typeof(Randomize).GetMethod("GetRandomString");
             callGetRandomInteger = typeof(Randomize).GetMethod("GetRandomInteger");
-            //callNew = typeof(Fixture).GetMethod("New");
+
+            il.Emit(OpCodes.Newobj, ctor);  //inicializa StringBuilder
+            il.Emit(OpCodes.Stloc_0);
+
 
             foreach (PropertyInfo p in pi)
             {
-                il.Emit(OpCodes.Ldarg_0); //load this
-                if (p.PropertyType == typeof(string)) il.Emit(OpCodes.Call, callGetRandomString);
-                else if (p.PropertyType == typeof(int)) il.Emit(OpCodes.Call, callGetRandomInteger);
+                il.Emit(OpCodes.Ldloc_0); //load Student
+                if (p.PropertyType == typeof(string))
+                    il.Emit(OpCodes.Call, callGetRandomString);
+                else if (p.PropertyType == typeof(int))
+                    il.Emit(OpCodes.Call, callGetRandomInteger);
                 //else if (p.PropertyType.IsValueType) { il.Emit(OpCodes.Call, typeof(Fixture
                 MethodInfo setValue = p.GetSetMethod();
                 il.Emit(OpCodes.Call, setValue);
             }
-
-           // il.Emit(OpCodes.Ldarg_0);
+            
+            il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
+
+    
+
+ 
 
         }
         private static ConstructorInfo getSmallestConstructor(Type classType)

@@ -15,7 +15,7 @@ namespace SettlerEmit
         private readonly Type klass;
         private Object SingletonObject;
         private bool IsSingleton;
-        private Dictionary<String, object> Map = new Dictionary<string, object>();
+        private Dictionary<String, IFixture> Map = new Dictionary<string, IFixture>();
         public Fixture()
         {
             klass = typeof(T);
@@ -25,12 +25,12 @@ namespace SettlerEmit
         public T New()
         {
             if (Map.ContainsKey(klass.Name))
-                return (T)Map[klass.Name];
+                return (T)Map[klass.Name].New();
             if (LoadAssemblies())
-                return (T)Map[klass.Name];
+                return (T)Map[klass.Name].New();
             IFixture fixture = new SettlerEmitter().CreateAssembly(klass);
+            Map.Add(klass.Name, fixture);
             T newObj = (T)fixture.New();
-            Map.Add(klass.Name, newObj);
             return newObj;
         }
 
@@ -128,13 +128,13 @@ namespace SettlerEmit
         private bool LoadAssemblies()
         {
             Assembly asm;
-            T newObj;
+            IFixture newObj;
             string typeName = klass.Name;
 
             try
             {
                 asm = Assembly.LoadFrom(SettlerEmitter.AssemblyNamePrefix + typeName + SettlerEmitter.AssemblyFileExtension);
-                newObj = (T)asm.CreateInstance(SettlerEmitter.AssemblyNamePrefix + typeName);
+                newObj = (IFixture)asm.CreateInstance(SettlerEmitter.AssemblyNamePrefix + typeName);
             }
             catch (Exception)
             {
