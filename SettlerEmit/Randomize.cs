@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SettlerEmit
 {
-    class Randomize
+    public class Randomize
     {
         public const int MIN_RANDOM_INTEGER = 1;
         public const int MAX_RANDOM_INTEGER = 10;

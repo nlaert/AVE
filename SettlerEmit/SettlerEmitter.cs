@@ -103,22 +103,22 @@ namespace SettlerEmit
             callGetRandomString = typeof(Randomize).GetMethod("GetRandomString");
             callGetRandomInteger = typeof(Randomize).GetMethod("GetRandomInteger");
 
-            il.Emit(OpCodes.Newobj, ctor);  //inicializa StringBuilder
+            il.Emit(OpCodes.Newobj, ctor);  //inicializa Student
             il.Emit(OpCodes.Stloc_0);
-
 
             foreach (PropertyInfo p in pi)
             {
                 il.Emit(OpCodes.Ldloc_0); //load Student
                 if (p.PropertyType == typeof(string))
                     il.Emit(OpCodes.Call, callGetRandomString);
-                else if (p.PropertyType == typeof(int))
+                else if (p.PropertyType.IsValueType)
+                {
                     il.Emit(OpCodes.Call, callGetRandomInteger);
-                //else if (p.PropertyType.IsValueType) { il.Emit(OpCodes.Call, typeof(Fixture
+                }
                 MethodInfo setValue = p.GetSetMethod();
                 il.Emit(OpCodes.Call, setValue);
             }
-            
+
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
 
