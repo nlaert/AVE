@@ -34,6 +34,8 @@ namespace SettlerEmit
             return newObj;
         }
 
+
+
         Object IFixture.New()
         {
             return this.New();

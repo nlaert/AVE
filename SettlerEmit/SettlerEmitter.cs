@@ -17,6 +17,8 @@ namespace SettlerEmit
         MethodInfo callNew;
         MethodInfo callGetRandomString;
         MethodInfo callGetRandomInteger;
+        MethodInfo callFixtureFor;
+        MethodInfo callFixtureNew;
         LocalBuilder localString;
         LocalBuilder paramObject;
         LocalBuilder lengthLocal;
@@ -84,6 +86,8 @@ namespace SettlerEmit
             
             callGetRandomString = typeof(Randomize).GetMethod("GetRandomString");
             callGetRandomInteger = typeof(Randomize).GetMethod("GetRandomInteger");
+            callFixtureFor = typeof(AutoFixture).GetMethod("For", new Type[] { typeof(Type) });
+            callFixtureNew = typeof(IFixture).GetMethod("New");
 
             CallCtor(il, type);
 
@@ -100,7 +104,7 @@ namespace SettlerEmit
             if (ctor.GetParameters().Length == 0)
             {
                 il.Emit(OpCodes.Newobj, ctor);  //inicializa Student
-                //il.Emit(OpCodes.Stloc_0);
+                il.Emit(OpCodes.Stloc_0);
                 callRandomize(il,type);
             }
             else
@@ -112,11 +116,30 @@ namespace SettlerEmit
                     else if (param.ParameterType.IsValueType)
                         il.Emit(OpCodes.Call, callGetRandomInteger);
                     else
-                        CallCtor(il, param.ParameterType);
+                    {
+                       
+                        CallNewAutoFixture(param.ParameterType);
+                        
+                        //CallCtor(il, param.ParameterType);
+                    }
+                       
                 }
                 il.Emit(OpCodes.Newobj, ctor);
                 il.Emit(OpCodes.Stloc_0);
             }
+        }
+
+        private void CallNewAutoFixture(Type type)
+        {
+            //Fazer push do tipo para a stack
+            // Chamar o AutoFixture.For(..)
+            // Chamar o New()
+            il.Emit(OpCodes.Ldtoken, type);
+            il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle", new Type[1] { typeof(RuntimeTypeHandle) }));
+            il.Emit(OpCodes.Call, callFixtureFor);
+            il.Emit(OpCodes.Call, callFixtureNew);
+            il.Emit(OpCodes.Castclass, type);
+
         }
 
         private void callRandomize(ILGenerator il, Type type)
