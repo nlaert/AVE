@@ -136,8 +136,11 @@ namespace Settler
             {
                 ParameterInfo parameterInfo = pi[i];
                 ConstructorInfo cType = getSmallestConstructor(parameterInfo.ParameterType);
-                if (cType == null || cType.GetParameters().Length == 0) parameters[i] = Activator.CreateInstance(parameterInfo.ParameterType);
-                else { parameters[i] = getInstance(parameterInfo.ParameterType); }
+                if (cType == null || cType.GetParameters().Length == 0) 
+                    parameters[i] = Activator.CreateInstance(parameterInfo.ParameterType);
+                else {
+                    parameters[i] = getInstance(parameterInfo.ParameterType); 
+                }
             }
             return ci.Invoke(parameters);
         }
