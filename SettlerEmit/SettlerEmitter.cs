@@ -55,13 +55,32 @@ namespace SettlerEmit
                 typeof(object),
                 new Type[] { typeof(int)});
 
+            Type [] pma = type.GetMethod("Member", BindingFlags.Public 
+                | BindingFlags.Instance 
+                | BindingFlags.DeclaredOnly).GetParameters().Select( p => p.ParameterType).ToArray();
+            
+            MethodBuilder MemberMethodBuilder = typeBuilder.DefineMethod(
+                "Member",
+                MethodAttributes.Public |
+                MethodAttributes.Virtual |
+                MethodAttributes.ReuseSlot,
+                typeof(object),pma );
+            
             ImplementNewMethod(NewMethodBuilder, type);
             ImplementFillMethod(FillMethodBuilder, type);
-
+            ImplementMemberMethod(MemberMethodBuilder, type);
             Type FixtureType = typeBuilder.CreateType();
             asmBuilder.Save(DLL_NAME);
             return (IFixture)Activator.CreateInstance(FixtureType);
         }
+        /*  only need to call the normal Member method */
+        private void ImplementMemberMethod(MethodBuilder MemberMethodBuilder, Type type)
+        {
+            MethodInfo member = typeof(IFixture).GetMethod("Member");
+            ILGenerator il = MemberMethodBuilder.GetILGenerator();
+            il.Emit(OpCodes.Call, member);
+
+        } 
 
         private void ImplementFillMethod(MethodBuilder fillMethodBuilder, Type type)
         {
@@ -85,7 +104,7 @@ namespace SettlerEmit
             il.MarkLabel(loopBody);
             il.Emit(OpCodes.Ldloc,returnArray);
             il.Emit(OpCodes.Ldloc_1); //loads idx
-           // il.Emit(OpCodes.Ldarg_0); preciso chamar o this? this.New()?
+           // il.Emit(OpCodes.Ldarg_0); //preciso chamar o this? this.New()?
             il.Emit(OpCodes.Call, callFixtureNew);
             il.Emit(OpCodes.Stelem_Ref); //[idx]= New(); Array upsideDown
             il.Emit(OpCodes.Ldloc_1); //loads idx
