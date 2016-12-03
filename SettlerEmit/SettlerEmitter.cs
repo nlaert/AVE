@@ -65,16 +65,40 @@ namespace SettlerEmit
 
         private void ImplementFillMethod(MethodBuilder fillMethodBuilder, Type type)
         {
+            
             il = fillMethodBuilder.GetILGenerator();
-            paramObject = il.DeclareLocal(type);//0
+            var loopBody = il.DefineLabel();
+            var end = il.DefineLabel();
+            callFixtureNew = typeof(IFixture).GetMethod("New");
+            paramObject = il.DeclareLocal(type);// declare T aka type
+            LocalBuilder returnArray = il.DeclareLocal(typeof(object[]));
+            LocalBuilder idx = il.DeclareLocal(typeof(int)); //declare place to store index 
+            il.Emit(OpCodes.Ldarg_1); // ld int
+            il.Emit(OpCodes.Newarr, typeof(object)); //creates array with size [ldarg_1]
+            il.Emit(OpCodes.Stloc, returnArray);
+            il.Emit(OpCodes.Ldarg_1); // ld int
+            il.Emit(OpCodes.Ldc_I4, 0); //load 0
+            il.Emit(OpCodes.Beq_S, end);  //exit if int = 0
+            il.Emit(OpCodes.Ldarg_1); // ld int
+            il.Emit(OpCodes.Sub, 1); // int--
+            il.Emit(OpCodes.Stloc_1); //[idx], int
+            il.MarkLabel(loopBody);
+            il.Emit(OpCodes.Ldloc,returnArray);
+            il.Emit(OpCodes.Ldloc_1); //loads idx
+           // il.Emit(OpCodes.Ldarg_0); preciso chamar o this? this.New()?
+            il.Emit(OpCodes.Call, callFixtureNew);
+            il.Emit(OpCodes.Stelem_Ref); //[idx]= New(); Array upsideDown
+            il.Emit(OpCodes.Ldloc_1); //loads idx
+            il.Emit(OpCodes.Sub, 1); //idx--
+            il.Emit(OpCodes.Stloc_1); //[idx]
+            il.Emit(OpCodes.Ldloc_1); // idx
+            il.Emit(OpCodes.Ldc_I4, -1);
+            il.Emit(OpCodes.Beq, end);
+            il.Emit(OpCodes.Jmp, loopBody);
 
-            string hello = "hello";
-            il.Emit(OpCodes.Ldstr, hello);
-            MethodInfo method = typeof(System.Console).GetMethod("WriteLine",
-                BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object) }, null);
-            il.Emit(OpCodes.Call, method);
-
-            il.Emit(OpCodes.Ldloc_0);
+            il.MarkLabel(end);
+            il.Emit(OpCodes.Ldloc_0); //array
+            il.Emit(OpCodes.Castclass, type);
             il.Emit(OpCodes.Ret);
 
         }
