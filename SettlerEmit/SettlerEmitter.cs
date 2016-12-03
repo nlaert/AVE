@@ -53,18 +53,17 @@ namespace SettlerEmit
                 MethodAttributes.Virtual |
                 MethodAttributes.ReuseSlot,
                 typeof(object),
-                new Type[] { typeof(int)});
+                new Type[] { typeof(int) });
 
-            Type [] pma = type.GetMethod("Member", BindingFlags.Public 
-                | BindingFlags.Instance 
-                | BindingFlags.DeclaredOnly).GetParameters().Select( p => p.ParameterType).ToArray();
-            
+             
+            //new Type[] { typeof(object[])}
+           
             MethodBuilder MemberMethodBuilder = typeBuilder.DefineMethod(
                 "Member",
                 MethodAttributes.Public |
                 MethodAttributes.Virtual |
                 MethodAttributes.ReuseSlot,
-                typeof(object),pma );
+                typeof(object), new Type [] { typeof(object[]) });
             
             ImplementNewMethod(NewMethodBuilder, type);
             ImplementFillMethod(FillMethodBuilder, type);
@@ -76,7 +75,7 @@ namespace SettlerEmit
         /*  only need to call the normal Member method */
         private void ImplementMemberMethod(MethodBuilder MemberMethodBuilder, Type type)
         {
-            MethodInfo member = typeof(IFixture).GetMethod("Member");
+            MethodInfo member = typeof(AutoFixture).GetMethod("Member");
             ILGenerator il = MemberMethodBuilder.GetILGenerator();
             il.Emit(OpCodes.Call, member);
 
@@ -86,10 +85,11 @@ namespace SettlerEmit
         {
             
             il = fillMethodBuilder.GetILGenerator();
+            
             var loopBody = il.DefineLabel();
             var end = il.DefineLabel();
             callFixtureNew = typeof(IFixture).GetMethod("New");
-            paramObject = il.DeclareLocal(type);// declare T aka type
+            //paramObject = il.DeclareLocal(type);// declare T aka type
             LocalBuilder returnArray = il.DeclareLocal(typeof(object[]));
             LocalBuilder idx = il.DeclareLocal(typeof(int)); //declare place to store index 
             il.Emit(OpCodes.Ldarg_1); // ld int
@@ -99,21 +99,23 @@ namespace SettlerEmit
             il.Emit(OpCodes.Ldc_I4, 0); //load 0
             il.Emit(OpCodes.Beq_S, end);  //exit if int = 0
             il.Emit(OpCodes.Ldarg_1); // ld int
-            il.Emit(OpCodes.Sub, 1); // int--
+            il.Emit(OpCodes.Ldc_I4_1);
+            il.Emit(OpCodes.Sub); // int--
             il.Emit(OpCodes.Stloc_1); //[idx], int
             il.MarkLabel(loopBody);
             il.Emit(OpCodes.Ldloc,returnArray);
             il.Emit(OpCodes.Ldloc_1); //loads idx
-           // il.Emit(OpCodes.Ldarg_0); //preciso chamar o this? this.New()?
+            il.Emit(OpCodes.Ldarg_0); // this
             il.Emit(OpCodes.Call, callFixtureNew);
-            il.Emit(OpCodes.Stelem_Ref); //[idx]= New(); Array upsideDown
+            il.Emit(OpCodes.Stelem, type); //[idx]= New(); Array upsideDown
             il.Emit(OpCodes.Ldloc_1); //loads idx
-            il.Emit(OpCodes.Sub, 1); //idx--
+            il.Emit(OpCodes.Ldc_I4_1);
+            il.Emit(OpCodes.Sub); //idx--
             il.Emit(OpCodes.Stloc_1); //[idx]
             il.Emit(OpCodes.Ldloc_1); // idx
             il.Emit(OpCodes.Ldc_I4, -1);
             il.Emit(OpCodes.Beq, end);
-            il.Emit(OpCodes.Jmp, loopBody);
+            il.Emit(OpCodes.Br,loopBody);
 
             il.MarkLabel(end);
             il.Emit(OpCodes.Ldloc_0); //array

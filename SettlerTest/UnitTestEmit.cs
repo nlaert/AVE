@@ -26,7 +26,7 @@ namespace Settler.Test
             Assert.AreNotEqual(0, s.Nr);
             Console.WriteLine(s);
         }
-        [TestMethod]
+       /* [TestMethod]
         public void TestFill()
         {
             Fixture<Student> fix = AutoFixture.For<Student>();
@@ -37,6 +37,6 @@ namespace Settler.Test
                 Assert.IsNotNull(s.Name);
                 Assert.AreNotEqual(0, s.Nr);
             }
-        }
+        } */
     }
 }
