@@ -38,28 +38,35 @@ namespace AutoFixture
                 temp = (T)getInstance(klass);
                 foreach (PropertyInfo prop in klass.GetProperties())
                 {
-                    Object value;
-                    if (Map.TryGetValue(prop.Name, out value))
+                    if (!IgnoredProperties.Contains(prop.Name))
                     {
-                        if (typeof(IFixture).IsAssignableFrom(value.GetType()))
+
+                        Object value;
+                        if (Map.TryGetValue(prop.Name, out value))
                         {
-                            var x = value.GetType().GetMethod("New").Invoke(value, null);
-                            prop.SetValue(temp, x);
+                            if (typeof(IFixture).IsAssignableFrom(value.GetType()))
+                            {
+                                var x = value.GetType().GetMethod("New").Invoke(value, null);
+                                prop.SetValue(temp, x);
+                            }
+                            else
+                                prop.SetValue(temp, value);
                         }
                         else
-                            prop.SetValue(temp, value);
+                            prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
                     }
-                    else
-                        prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
                 }
 
                 foreach (FieldInfo field in klass.GetFields())
                 {
-                    Object value;
-                    if (Map.TryGetValue(field.Name, out value))
-                        field.SetValue(temp, value);
-                    else
-                        field.SetValue(temp, AutoFixture.For(field.FieldType).New());
+                    if (!IgnoredProperties.Contains(field.Name))
+                    {
+                        Object value;
+                        if (Map.TryGetValue(field.Name, out value))
+                            field.SetValue(temp, value);
+                        else
+                            field.SetValue(temp, AutoFixture.For(field.FieldType).New());
+                    }
                 }
                 SingletonObject = temp;
                 return temp;
