@@ -20,6 +20,7 @@ namespace AutoFixture
         private bool IsSingleton;
         private Dictionary<String, Object> Map = new Dictionary<string, object>();
         private List<string> IgnoredProperties = new List<string>();
+        private List<NameAndFunc<T>> listMember = new List<NameAndFunc<T>>();
         public Fixture()
         {
             klass = typeof(T);
@@ -93,6 +94,20 @@ namespace AutoFixture
         {
             IsSingleton = true;
             return this;
+        }
+
+        //need to use delegates in this i think
+        public Fixture<T> Member(string name, Func<T> someFunction) 
+        {
+            var a = someFunction.Invoke();
+            PropertyInfo p1 = klass.GetProperty(name);
+            //isto so vai retornar objecto, acho q tem q se chamar a funcao. 
+           // if (p1 != null) if (!p1.PropertyType.IsAssignableFrom(someFunction.Method.ReturnType)) throw new Exception();
+            if (p1 != null) if (!p1.PropertyType.IsAssignableFrom(a.GetType())) throw new InvalidCastException();
+            FieldInfo f1 = klass.GetField(name);
+             if (p1 != null) if (! f1.FieldType.IsAssignableFrom(a.GetType()))  throw new InvalidCastException();
+           listMember.Add(new NameAndFunc<T>(name, someFunction));
+           return this;
         }
 
         public Fixture<T> Member(string name, params object[] pool)
@@ -179,6 +194,17 @@ namespace AutoFixture
                 }
             }
             return smallestCi;
+        }
+    }
+    public class NameAndFunc<T>
+    {
+        public string name { get; set; }
+        public Func<T> myFunc { get; set; }
+        public NameAndFunc(string name, Func<T> myFunc)
+        {
+
+            this.name = name;
+            this.myFunc = myFunc;
         }
     }
 }
