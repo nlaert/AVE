@@ -1,4 +1,4 @@
-﻿﻿using Settler;
+﻿using Settler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,7 @@ namespace AutoFixture
         private bool IsSingleton;
         private Dictionary<String, Object> Map = new Dictionary<string, object>();
         private List<string> IgnoredProperties = new List<string>();
-        private List<NameAndFunc<T>> listMember = new List<NameAndFunc<T>>();
+       
         public Fixture()
         {
             klass = typeof(T);
@@ -49,6 +49,10 @@ namespace AutoFixture
                             {
                                 var x = value.GetType().GetMethod("New").Invoke(value, null);
                                 prop.SetValue(temp, x);
+                            }
+                            else if(typeof(MemberObjectFunc).IsAssignableFrom(value.GetType())) {
+                                Object funcValue = ((MemberObjectFunc)value).Invoke();
+                                prop.SetValue(temp, funcValue);
                             }
                             else
                                 prop.SetValue(temp, value);
@@ -96,18 +100,26 @@ namespace AutoFixture
             return this;
         }
 
-        //need to use delegates in this i think
-        public Fixture<T> Member(string name, Func<T> someFunction) 
+        public delegate Object MemberObjectFunc();
+        
+            //need to use delegates in this i think
+        public Fixture<T> Member(string name, MemberObjectFunc someFunction)
         {
-            var a = someFunction.Invoke();
+            
+           Object value = someFunction.Invoke() ;
+
             PropertyInfo p1 = klass.GetProperty(name);
-            //isto so vai retornar objecto, acho q tem q se chamar a funcao. 
-           // if (p1 != null) if (!p1.PropertyType.IsAssignableFrom(someFunction.Method.ReturnType)) throw new Exception();
-            if (p1 != null) if (!p1.PropertyType.IsAssignableFrom(a.GetType())) throw new InvalidCastException();
+           
+                   
+            if (p1 != null && !p1.PropertyType.IsAssignableFrom(value.GetType()))
+                    throw new InvalidCastException();
+
             FieldInfo f1 = klass.GetField(name);
-             if (p1 != null) if (! f1.FieldType.IsAssignableFrom(a.GetType()))  throw new InvalidCastException();
-           listMember.Add(new NameAndFunc<T>(name, someFunction));
-           return this;
+            if (f1 != null && !f1.FieldType.IsAssignableFrom(value.GetType()))
+                    throw new InvalidCastException();
+
+            Map.Add(name, someFunction);
+            return this;
         }
 
         public Fixture<T> Member(string name, params object[] pool)
@@ -116,16 +128,6 @@ namespace AutoFixture
             if (pi.Count() == 0)
                 throw new InvalidOperationException();
             var index = Randomize.GetRandomInteger(pool.Length);
-            /*
-            if (typeof(IFixture).IsAssignableFrom(pool[index].GetType()))
-            {
-                var x = pool[index].GetType().GetMethod("New").Invoke(pool[index], null);
-                Map.Add(name, x);
-                //falta ir buscar o valor do singleton
-            }
-            else
-
-                */
             Map.Add(name, pool[index]);
 
 
@@ -153,7 +155,7 @@ namespace AutoFixture
 
         public Fixture<T> Ignore(string ToBeIgnored)
         {
-            if(!IgnoredProperties.Contains(ToBeIgnored))
+            if (!IgnoredProperties.Contains(ToBeIgnored))
                 IgnoredProperties.Add(ToBeIgnored);
             return this;
         }
@@ -196,15 +198,5 @@ namespace AutoFixture
             return smallestCi;
         }
     }
-    public class NameAndFunc<T>
-    {
-        public string name { get; set; }
-        public Func<T> myFunc { get; set; }
-        public NameAndFunc(string name, Func<T> myFunc)
-        {
-
-            this.name = name;
-            this.myFunc = myFunc;
-        }
-    }
+   
 }
