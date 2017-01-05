@@ -20,7 +20,7 @@ namespace AutoFixture
         private bool IsSingleton;
         private Dictionary<String, Object> Map = new Dictionary<string, object>();
         private List<string> IgnoredProperties = new List<string>();
-       
+
         public Fixture()
         {
             klass = typeof(T);
@@ -37,42 +37,8 @@ namespace AutoFixture
             if (!klass.IsPrimitive && klass != typeof(string) && !klass.IsArray)
             {
                 temp = (T)getInstance(klass);
-                foreach (PropertyInfo prop in klass.GetProperties())
-                {
-                    if (!IgnoredProperties.Contains(prop.Name))
-                    {
-
-                        Object value;
-                        if (Map.TryGetValue(prop.Name, out value))
-                        {
-                            if (typeof(IFixture).IsAssignableFrom(value.GetType()))
-                            {
-                                var x = value.GetType().GetMethod("New").Invoke(value, null);
-                                prop.SetValue(temp, x);
-                            }
-                            else if(typeof(MemberObjectFunc).IsAssignableFrom(value.GetType())) {
-                                Object funcValue = ((MemberObjectFunc)value).Invoke();
-                                prop.SetValue(temp, funcValue);
-                            }
-                            else
-                                prop.SetValue(temp, value);
-                        }
-                        else
-                            prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
-                    }
-                }
-
-                foreach (FieldInfo field in klass.GetFields())
-                {
-                    if (!IgnoredProperties.Contains(field.Name))
-                    {
-                        Object value;
-                        if (Map.TryGetValue(field.Name, out value))
-                            field.SetValue(temp, value);
-                        else
-                            field.SetValue(temp, AutoFixture.For(field.FieldType).New());
-                    }
-                }
+                ProcessFields(temp);
+                ProcessProperties(temp);
                 SingletonObject = temp;
                 return temp;
             }
@@ -83,6 +49,56 @@ namespace AutoFixture
             return (T)FillPrimitive();
 
         }
+
+        #region ProcessPropertiesAndFields
+        private void ProcessProperties(T temp)
+        {
+
+            foreach (PropertyInfo prop in klass.GetProperties())
+            {
+                if (!IgnoredProperties.Contains(prop.Name))
+                {
+                    Object value;
+                    if (Map.TryGetValue(prop.Name, out value))
+                    {
+                        if (typeof(IFixture).IsAssignableFrom(value.GetType()))
+                            value = value.GetType().GetMethod("New").Invoke(value, null);
+
+                        else if (typeof(MemberObjectFunc).IsAssignableFrom(value.GetType()))
+                            value = ((MemberObjectFunc)value).Invoke();
+
+                        prop.SetValue(temp, value);
+                    }
+                    else
+                        prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
+                }
+            }
+        }
+
+        private void ProcessFields(T temp)
+        {
+            foreach (FieldInfo field in klass.GetFields())
+            {
+                if (!IgnoredProperties.Contains(field.Name))
+                {
+                    Object value;
+                    if (Map.TryGetValue(field.Name, out value))
+                    {
+                        if (typeof(IFixture).IsAssignableFrom(value.GetType()))
+                            value = value.GetType().GetMethod("New").Invoke(value, null);
+
+                        else if (typeof(MemberObjectFunc).IsAssignableFrom(value.GetType()))
+                            value = ((MemberObjectFunc)value).Invoke();
+
+                        field.SetValue(temp, value);
+                    }
+                    else
+                        field.SetValue(temp, AutoFixture.For(field.FieldType).New());
+                }
+            }
+        }
+
+        #endregion
 
         Object IFixture.New()
         {
@@ -100,23 +116,20 @@ namespace AutoFixture
             return this;
         }
 
+        #region MemberMethods
         public delegate Object MemberObjectFunc();
-        
-            //need to use delegates in this i think
+
         public Fixture<T> Member(string name, MemberObjectFunc someFunction)
         {
-            
-           Object value = someFunction.Invoke() ;
 
+            Object value = someFunction.Invoke();
             PropertyInfo p1 = klass.GetProperty(name);
-           
-                   
             if (p1 != null && !p1.PropertyType.IsAssignableFrom(value.GetType()))
-                    throw new InvalidCastException();
+                throw new InvalidCastException();
 
             FieldInfo f1 = klass.GetField(name);
             if (f1 != null && !f1.FieldType.IsAssignableFrom(value.GetType()))
-                    throw new InvalidCastException();
+                throw new InvalidCastException();
 
             Map.Add(name, someFunction);
             return this;
@@ -129,10 +142,10 @@ namespace AutoFixture
                 throw new InvalidOperationException();
             var index = Randomize.GetRandomInteger(pool.Length);
             Map.Add(name, pool[index]);
-
-
             return this;
         }
+
+        #endregion
 
         public T[] Fill(int size)
         {
@@ -198,5 +211,5 @@ namespace AutoFixture
             return smallestCi;
         }
     }
-   
+
 }
