@@ -21,7 +21,7 @@ namespace SettlerEmit.Test
             Console.WriteLine(s);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestFill()
         {
             SettlerEmit.SettlerEmitter emitter = new SettlerEmit.SettlerEmitter();
@@ -34,7 +34,7 @@ namespace SettlerEmit.Test
                 Assert.AreNotEqual(0, s.Nr);
             }
         }
-        [TestMethod]
+        //[TestMethod]
         public void TestMember()
         {
             String[] expectedNames = { "Jose Calhau", "Maria Papoila", "Augusto Seabra" };

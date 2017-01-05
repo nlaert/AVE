@@ -31,5 +31,29 @@ namespace AutoFixture.Tests
             Console.WriteLine(s);
 
         }
+
+        [TestMethod()]
+        public void FillTest()
+        {
+            School school = new School();
+            school.Location = "Chelas";
+            school.Name = "ISEL";
+
+            Fixture<Student> fix = AutoFixture
+              .For<Student>()
+              .Member("School", () =>
+            {
+                School sc = new School();
+                sc.Location = "Chelas";
+                sc.Name = "ISEL";
+                return sc;
+            });
+
+            Student s = fix.New();
+
+            Assert.IsNotNull(s);
+            Assert.AreEqual(s.School, school);
+
+        }
     }
 }
