@@ -53,8 +53,8 @@ namespace AutoFixture
         #region ProcessPropertiesAndFields
         private void ProcessProperties(T temp)
         {
-
-            foreach (PropertyInfo prop in klass.GetProperties())
+            
+            foreach (PropertyInfo prop in klass.GetProperties().Where( p => p.GetSetMethod()!= null ))
             {
                 if (!IgnoredProperties.Contains(prop.Name))
                 {
@@ -70,7 +70,10 @@ namespace AutoFixture
                         prop.SetValue(temp, value);
                     }
                     else
-                        prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
+                    {
+                        if (prop.PropertyType != klass)
+                            prop.SetValue(temp, AutoFixture.For(prop.PropertyType).New());
+                    }
                 }
             }
         }
@@ -93,7 +96,11 @@ namespace AutoFixture
                         field.SetValue(temp, value);
                     }
                     else
-                        field.SetValue(temp, AutoFixture.For(field.FieldType).New());
+                    {
+                        if (field.FieldType != klass)
+                            field.SetValue(temp, AutoFixture.For(field.FieldType).New());
+                    } //lets pray
+                        
                 }
             }
         }
@@ -122,15 +129,15 @@ namespace AutoFixture
         public Fixture<T> Member(string name, MemberObjectFunc someFunction)
         {
 
-            Object value = someFunction.Invoke();
+            var ret = someFunction.Invoke().GetType();
             PropertyInfo p1 = klass.GetProperty(name);
-            if (p1 != null && !p1.PropertyType.IsAssignableFrom(value.GetType()))
+            if (p1 != null && !p1.PropertyType.IsAssignableFrom(ret))
                 throw new InvalidCastException();
 
             FieldInfo f1 = klass.GetField(name);
-            if (f1 != null && !f1.FieldType.IsAssignableFrom(value.GetType()))
+            if (f1 != null && !f1.FieldType.IsAssignableFrom(ret))
                 throw new InvalidCastException();
-
+            
             Map.Add(name, someFunction);
             return this;
         }

@@ -9,5 +9,10 @@ namespace AutoFixture.Test
     {
         public string Name { get; set;  }
         public string Location{ get; set; }
+        public override bool Equals(object obj)
+        {
+            School s = obj as School;
+            return s.Name == this.Name && s.Location == this.Location;
+        }
     }
 }

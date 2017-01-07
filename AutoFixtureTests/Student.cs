@@ -33,5 +33,10 @@ namespace AutoFixture.Test
         {
             return String.Format("({0}) {1} {2} {3}",School,  Nr, Name, BirthDate);
         }
+        public override bool Equals(object obj)
+        {
+            Student s = obj as Student;
+            return s.BirthDate == this.BirthDate && s.Name == this.Name && s.Nr == this.Nr && s.School == this.School;
+        }
     }
 }
