@@ -35,5 +35,6 @@ namespace AutoFixture
                 .MakeGenericMethod(klass)
                 .Invoke(null, new object[0]);
         }
+      
     }
 }

@@ -33,8 +33,16 @@ namespace AutoFixture
                 throw new NullReferenceException();
             if (IsSingleton && SingletonObject != null)
                 return (T)SingletonObject;
+            if (klass.IsArray)
+            {
+                return (T)AutoFixture.For(klass.GetElementType()).Fill(Randomize.GetRandomInteger());
+            }
+            if (klass.GetInterface("ICollection") != null)
+            {
+                return (T)AutoFixture.For(klass.GetGenericArguments()[0]).Fill(Randomize.GetRandomInteger());
+            }
             T temp;
-            if (!klass.IsPrimitive && klass != typeof(string) && !klass.IsArray)
+            if (!klass.IsPrimitive && klass != typeof(string))
             {
                 temp = (T)getInstance(klass);
                 ProcessFields(temp);
@@ -42,10 +50,7 @@ namespace AutoFixture
                 SingletonObject = temp;
                 return temp;
             }
-            if (klass.IsArray)
-            {
-                return (T)AutoFixture.For(klass.GetElementType()).Fill(Randomize.GetRandomInteger());
-            }
+           
             return (T)FillPrimitive();
 
         }
@@ -154,7 +159,7 @@ namespace AutoFixture
 
         #endregion
 
-        public T[] Fill(int size)
+        public IEnumerable<T> Fill(int size)
         {
             T[] res = new T[size];
 
@@ -162,8 +167,9 @@ namespace AutoFixture
             {
                 res[i] = New();
             }
-            return res;
+            return res.ToList();
         }
+
 
         public object FillPrimitive()
         {
@@ -177,6 +183,13 @@ namespace AutoFixture
         {
             if (!IgnoredProperties.Contains(ToBeIgnored))
                 IgnoredProperties.Add(ToBeIgnored);
+            return this;
+        }
+
+        public Fixture<T> Ignore<A>() where A : Attribute 
+        {
+            foreach (PropertyInfo p in klass.GetProperties().Where( x => x.GetCustomAttribute(typeof(A),false) != null))
+                    Ignore(p.Name);
             return this;
         }
 

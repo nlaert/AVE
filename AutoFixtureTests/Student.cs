@@ -8,6 +8,7 @@ namespace AutoFixture.Test
 {
     class Student
     {
+
         public Student() {
         
         }
@@ -25,10 +26,12 @@ namespace AutoFixture.Test
             this.Name = p2;
             this.School = p3;
         }
+        [NonFixtureAttribute]
         public int Nr { get; set; }
         public string Name { get; set; }
         public School School { get; set; }
         public DateTime BirthDate { get; set; }
+        public List<School> AllSchools { get; set; }
         public override string ToString()
         {
             return String.Format("({0}) {1} {2} {3}",School,  Nr, Name, BirthDate);
@@ -36,7 +39,9 @@ namespace AutoFixture.Test
         public override bool Equals(object obj)
         {
             Student s = obj as Student;
-            return s.BirthDate == this.BirthDate && s.Name == this.Name && s.Nr == this.Nr && s.School == this.School;
+            return s.BirthDate == this.BirthDate && s.Name.Equals(this.Name) && s.Nr == this.Nr && s.School == this.School && this.AllSchools==s.AllSchools;
         }
     }
+    
+  
 }
