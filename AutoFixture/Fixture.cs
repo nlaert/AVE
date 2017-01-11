@@ -69,7 +69,9 @@ namespace AutoFixture
                         if (typeof(IFixture).IsAssignableFrom(value.GetType()))
                             value = value.GetType().GetMethod("New").Invoke(value, null);
 
-                        else if (typeof(MemberObjectFunc).IsAssignableFrom(value.GetType()))
+
+                        //TODO VALIDAR O PORQUE DE NAO PASSAR OCNFORME FALAMOS
+                        else if (typeof(Delegate).IsAssignableFrom(value.GetType()))
                             value = ((MemberObjectFunc)value).Invoke();
 
                         prop.SetValue(temp, value);
@@ -131,10 +133,13 @@ namespace AutoFixture
         #region MemberMethods
         public delegate Object MemberObjectFunc();
 
-        public Fixture<T> Member(string name, MemberObjectFunc someFunction)
+        
+        public Fixture<T> Member<U>(string name, Func<U> someFunction)
         {
 
-            var ret = someFunction.Invoke().GetType();
+            //var ret = someFunction.Invoke().GetType();
+            Type aux = someFunction.GetType();
+            var ret = aux.GetMethod("Invoke").ReturnType;
             PropertyInfo p1 = klass.GetProperty(name);
             if (p1 != null && !p1.PropertyType.IsAssignableFrom(ret))
                 throw new InvalidCastException();
@@ -146,7 +151,9 @@ namespace AutoFixture
             Map.Add(name, someFunction);
             return this;
         }
+        
 
+        
         public Fixture<T> Member(string name, params object[] pool)
         {
             IEnumerable<PropertyInfo> pi = klass.GetProperties().Where(p => p.Name.Equals(name));
