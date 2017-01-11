@@ -72,7 +72,7 @@ namespace AutoFixture
 
                         //TODO VALIDAR O PORQUE DE NAO PASSAR OCNFORME FALAMOS
                         else if (typeof(Delegate).IsAssignableFrom(value.GetType()))
-                            value = ((MemberObjectFunc)value).Invoke();
+                            value = ((Delegate)value).DynamicInvoke();
 
                         prop.SetValue(temp, value);
                     }
@@ -97,8 +97,8 @@ namespace AutoFixture
                         if (typeof(IFixture).IsAssignableFrom(value.GetType()))
                             value = value.GetType().GetMethod("New").Invoke(value, null);
 
-                        else if (typeof(MemberObjectFunc).IsAssignableFrom(value.GetType()))
-                            value = ((MemberObjectFunc)value).Invoke();
+                        else if (typeof(Delegate).IsAssignableFrom(value.GetType()))
+                            value = ((Delegate)value).DynamicInvoke();
 
                         field.SetValue(temp, value);
                     }
@@ -131,15 +131,15 @@ namespace AutoFixture
         }
 
         #region MemberMethods
-        public delegate Object MemberObjectFunc();
-
+        public delegate R MemberObjectFunc<R>();
         
-        public Fixture<T> Member<U>(string name, Func<U> someFunction)
+        public Fixture<T> Member<R>(string name, MemberObjectFunc<R> someFunction)
         {
 
             //var ret = someFunction.Invoke().GetType();
-            Type aux = someFunction.GetType();
-            var ret = aux.GetMethod("Invoke").ReturnType;
+            //Type aux = someFunction.GetType();
+            //var ret = aux.GetMethod("Invoke").ReturnType;
+            var ret = someFunction.Method.ReturnType;
             PropertyInfo p1 = klass.GetProperty(name);
             if (p1 != null && !p1.PropertyType.IsAssignableFrom(ret))
                 throw new InvalidCastException();
