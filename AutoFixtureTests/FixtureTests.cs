@@ -75,7 +75,7 @@ namespace AutoFixture.Tests
 
             List<School> all = new List<School>();
             all.Add(new School("Isel", "chelas"));
-            all.Add(new School("escola da vida", "Nacional 4"));
+            all.Add(new School("google", "ask your dns provider :P "));
             Fixture<Student> fix = AutoFixture
               .For<Student>()
               .Member("BirthDate", () => dt.AddMonths(1))
